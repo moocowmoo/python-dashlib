@@ -79,11 +79,9 @@ class CTransactionLock(bitcoin.core.ImmutableSerializable):
         object.__setattr__(self, 'vin', vin)
         object.__setattr__(self, 'sig', sig)
         object.__setattr__(self, 'height', height)
-        print repr(self)
 
     @classmethod
     def stream_deserialize(cls, f):
-        # FIXME store as lx()
         hash = ser_read(f, 32)
         vin = CTxIn.stream_deserialize(f)
         sig = BytesSerializer.stream_deserialize(f)
@@ -144,3 +142,11 @@ bitcoin.messages.msg_txlvote = msg_txlvote
 bitcoin.messages.msg_ix = msg_ix
 bitcoin.messages.messagemap["txlvote"] = msg_txlvote
 bitcoin.messages.messagemap["ix"] = msg_ix
+
+
+def JSONtoAmount(value):
+        return long(round(value * 1e8))
+
+
+def AmountToJSON(amount):
+        return float(amount / 1e8)
