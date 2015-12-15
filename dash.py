@@ -138,10 +138,18 @@ class msg_txlvote(bitcoin.messages.MsgSerializable):
     def __repr__(self):
         return "msg_txlvote(tx=%s)" % (repr(self.txlvote))
 
+
+class msg_ignore():
+
+    @classmethod
+    def msg_deser(cls, f, protover=bitcoin.net.PROTO_VERSION):
+        return None
+
 bitcoin.messages.msg_txlvote = msg_txlvote
 bitcoin.messages.msg_ix = msg_ix
 bitcoin.messages.messagemap["txlvote"] = msg_txlvote
 bitcoin.messages.messagemap["ix"] = msg_ix
+bitcoin.messages.messagemap["ssc"] = msg_ignore
 
 
 def JSONtoAmount(value):
