@@ -54,20 +54,20 @@ while True:
             time.sleep(5)
         elif msg.command == 'inv':
             for i in msg.inv:
+                print " -- inv type %s %s" % (i.type, CInv.typemap[i.type])
                 if i.type in (15,14,13,12,7,6):
                     continue
                 elif i.type in (1,3,4,5): # transaction/instantx
-#                    Command ''ix'' not in messagemap
-#                    Command ''txlvote'' not in messagemap
-#                    gd = msg_getdata()
-#                    gd.inv.append(i)
-#                    sock.send(gd.to_bytes())
-                    #print strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " --- " + str(i)
-                    print " inv txid=%s - msg_inv(tx=%s)" % (b2lx(i.GetHash()), repr(i))
+                    gd = msg_getdata()
+                    gd.inv.append(i)
+                    sock.send(gd.to_bytes())
+                    print strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " --- " + str(i)
                 else:
                     continue
         elif msg.command == 'ix':
-            print " ix txid=%s - msg_tx(tx=%s)" % (b2lx(msg.GetHash()), repr(msg))
+            print " ------------ "
+            print " ix txid=%s - msg_tx(tx=%s)" % (b2lx(msg.tx.GetHash()), repr(msg))
+            print " ------------ "
         elif msg.command == 'tx':
             for vout in msg.tx.vout:
                 print strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " " + str("%.8f" % AmountToJSON(vout.nValue)) + " -> " + str(P2PKHBitcoinAddress.from_scriptPubKey(vout.scriptPubKey))
