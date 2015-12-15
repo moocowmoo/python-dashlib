@@ -44,7 +44,7 @@ while True: # noqa
             # increment lock count
             # TODO these signatures need to be validated
             txid = b2lx(msg.txlvote.hash)
-            vin = b2lx(msg.txlvote.vin)
+            vin = b2lx(msg.txlvote.vin.prevout.hash)
             if 'vins' not in mempool[txid]:
                 mempool[txid]['vins'] = set()
             mempool[txid]['vins'].add(vin)
