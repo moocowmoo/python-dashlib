@@ -44,7 +44,10 @@ while True: # noqa
             # increment lock count
             # TODO these signatures need to be validated
             txid = b2lx(msg.txlvote.hash)
-            mempool[txid]['locks'] += 1
+            vin = b2lx(msg.txlvote.vin)
+            if 'vins' not in mempool[txid]:
+                mempool[txid]['vins'] = set()
+            mempool[txid]['vins'].add(vin)
             msg = mempool[txid]['msg']
             for vout in msg.tx.vout:
                 print_transaction(
@@ -53,7 +56,7 @@ while True: # noqa
                     str("%.8f" % dash.AmountToJSON(vout.nValue)),
                     str(P2PKHBitcoinAddress.from_scriptPubKey(
                         vout.scriptPubKey)),
-                    mempool[txid]['locks']
+                    len(mempool[txid]['vins'])
                 )
         elif msg.command == 'inv':
             for i in msg.inv:
