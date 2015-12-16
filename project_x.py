@@ -32,7 +32,7 @@ mempool = {}
 
 
 def trigger_sale(addr):
-    print "sale! product %s" % products[addr]['label']
+    print " --> SALE! product %s" % products[addr]['label']
     sys.stdout.flush()
     # products[addr]['callback']()
 
@@ -111,6 +111,7 @@ def process_p2p(data):
         for i in msg.inv:
             # print " -- got type %s" % (CInv.typemap[i.type])
             if i.type in (1, 4, 5):  # transaction/txlrequest/txlvote
+                sys.stderr.write(str(msg) + "\n")
                 gd = msg_getdata()
                 gd.inv.append(i)
                 sock.send(gd.to_bytes())
@@ -125,10 +126,16 @@ def process_p2p(data):
                         dash.AmountToJSON(vout.nValue))
     elif msg.command == 'ix':
         txid = b2lx(msg.tx.GetHash())
-        if txid not in mempool:
-            mempool[txid] = {"msg": msg}
-        elif 'msg' in mempool[txid]:
-            check_ix_signature_depth(txid, mempool[txid]['msg'])
+        for vout in msg.tx.vout:
+            addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
+                vout.scriptPubKey))
+            if addr in products:
+                sys.stderr.write(str(msg) + "\n")
+                if txid not in mempool:
+                    mempool[txid] = {"msg": msg}
+                elif 'msg' in mempool[txid]:
+                    check_ix_signature_depth(txid, mempool[txid]['msg'])
+
 
 # comm loop
 while True:
