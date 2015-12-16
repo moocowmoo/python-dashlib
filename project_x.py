@@ -74,7 +74,8 @@ def check_ix_signature_depth(txid, msg):
                 #     return_address = select_return_address(txid, vout)
                 # right amount, do it to it
                 if not mempool[txid]['sold']:
-                    mempool[txid]['sold'] = True
+                    # mempool[txid]['sold'] = True
+                    del mempool[txid]
                     # we sold something
                     trigger_sale(addr)
 
