@@ -100,7 +100,7 @@ def process_p2p(data):
         process_txlvote(msg)
     elif msg.command == 'inv':
         for i in msg.inv:
-            if i.type in (1, 5):  # transaction/txlock
+            if i.type in (1, 4, 5):  # transaction/txlrequest/txlvote
                 gd = msg_getdata()
                 gd.inv.append(i)
                 sock.send(gd.to_bytes())
