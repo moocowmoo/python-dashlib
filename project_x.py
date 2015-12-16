@@ -42,25 +42,26 @@ def run_command(cmd):
 
 
 # qnd
-def get_txn(txid, vout):
+def get_txn(txid):
     cli = 'dash-cli -datadir=/home/ubuntu/testnet/testnet'
     cmd = '%s decoderawtransaction `%s getrawtransaction %s`' % (cli, cli, txid)
     y = yaml.load(run_command(cmd))
     return y
 
 
+def send_to(addr, value):
+    cli = 'dash-cli -datadir=/home/ubuntu/testnet/testnet'
+    cmd = '%s sendtoaddress %s %s' % (cli, addr, value)
+    run_command(cmd)
+
+
 # qnd
-def select_return_address(txid, vout):
+def select_return_address(txid):
     # txid -> vin[0],vout -> txid -> vout[prevout[vout]], n, addresses[0]
-    prevout = get_txn(txid, vout)['vin'][vout]
-    source = get_txn(prevout['txid'], prevout['vout'])['vout']
+    prevout = get_txn(txid)['vin'][0]
+    source = get_txn(prevout['txid'])['vout']
     return source[prevout['vout']]['scriptPubKey']['addresses'][0]
 
-
-# txid = 'fed66063f6d285413cf76f889231aad60f010dee2305f2511957467ad736a20e'
-# vout = 0
-# return_address = select_return_address(txid, vout)
-# quit()
 
 def check_ix_signature_depth(txid, msg):
     for vout in msg.tx.vout:
@@ -113,7 +114,16 @@ def process_p2p(data):
                 gd = msg_getdata()
                 gd.inv.append(i)
                 sock.send(gd.to_bytes())
-    elif msg.command == 'ix' or msg.command == 'tx':
+    elif msg.command == 'tx':
+        txid = b2lx(msg.tx.GetHash())
+        for vout in msg.tx.vout:
+            addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
+                vout.scriptPubKey))
+            if addr in products:
+                # refund tx
+                send_to(select_return_address(txid),
+                        dash.AmountToJSON(vout.nValue))
+    elif msg.command == 'ix':
         txid = b2lx(msg.tx.GetHash())
         if txid not in mempool:
             mempool[txid] = {"msg": msg}
