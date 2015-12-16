@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append('./python-bitcoinlib')
-
 import socket
 import subprocess
+import sys
 import time
 import yaml
 from cStringIO import StringIO as BytesIO
@@ -123,8 +121,8 @@ def process_p2p(data):
 
 # comm loop
 while True:
-    data = sock.recv(100000)
-    time.sleep(0.1)
+    data = sock.recv(4096)
+    time.sleep(0.01)
     if len(data):
         process_p2p(data)
 
