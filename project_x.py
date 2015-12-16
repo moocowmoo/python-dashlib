@@ -14,6 +14,7 @@ from bitcoin import SelectParams
 from bitcoin.core import b2lx
 from bitcoin.messages import msg_version, msg_getdata, msg_pong, MsgSerializable
 from bitcoin.wallet import P2PKHBitcoinAddress
+# from bitcoin.net import CInv
 
 from products import products, LOCK_THRESHOLD
 
@@ -62,16 +63,7 @@ def select_return_address(txid, vout):
 # return_address = select_return_address(txid, vout)
 # quit()
 
-def process_txlvote(msg):
-    # TODO masternode vote signatures need to be validated
-    txid = b2lx(msg.txlvote.hash)
-    vin = b2lx(msg.txlvote.vin.prevout.hash)
-    if 'vins' not in mempool[txid]:
-        mempool[txid]['vins'] = set()
-    if 'sold' not in mempool[txid]:
-        mempool[txid]['sold'] = False
-    mempool[txid]['vins'].add(vin)
-    msg = mempool[txid]['msg']
+def check_ix_signature_depth(txid, msg):
     for vout in msg.tx.vout:
         addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
             vout.scriptPubKey))
@@ -88,11 +80,27 @@ def process_txlvote(msg):
                     trigger_sale(addr)
 
 
+def process_txlvote(msg):
+    # TODO masternode vote signatures need to be validated
+    txid = b2lx(msg.txlvote.hash)
+    vin = b2lx(msg.txlvote.vin.prevout.hash)
+    if txid not in mempool:
+        mempool[txid] = {}
+    if 'vins' not in mempool[txid]:
+        mempool[txid]['vins'] = set()
+    if 'sold' not in mempool[txid]:
+        mempool[txid]['sold'] = False
+    mempool[txid]['vins'].add(vin)
+    if 'msg' in mempool[txid]:
+        check_ix_signature_depth(txid, mempool[txid]['msg'])
+
+
 def process_p2p(data):
     f = BytesIO(data)
     msg = MsgSerializable.stream_deserialize(f)
     if msg is None:
         return
+    # print "got msg %s" % (msg.command)
     if msg.command == 'ping':
         pong = msg_pong(nonce=msg.nonce)
         sock.send(pong.to_bytes())
@@ -100,13 +108,17 @@ def process_p2p(data):
         process_txlvote(msg)
     elif msg.command == 'inv':
         for i in msg.inv:
+            # print " -- got type %s" % (CInv.typemap[i.type])
             if i.type in (1, 4, 5):  # transaction/txlrequest/txlvote
                 gd = msg_getdata()
                 gd.inv.append(i)
                 sock.send(gd.to_bytes())
     elif msg.command == 'ix' or msg.command == 'tx':
         txid = b2lx(msg.tx.GetHash())
-        mempool[txid] = {"msg": msg, "locks": 0}
+        if txid not in mempool:
+            mempool[txid] = {"msg": msg}
+        elif 'msg' in mempool[txid]:
+            check_ix_signature_depth(txid, mempool[txid]['msg'])
 
 # comm loop
 while True:
