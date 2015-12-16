@@ -151,6 +151,10 @@ bitcoin.messages.messagemap["txlvote"] = msg_txlvote
 bitcoin.messages.messagemap["ix"] = msg_ix
 bitcoin.messages.messagemap["ssc"] = msg_ignore
 bitcoin.messages.messagemap["dsq"] = msg_ignore
+bitcoin.messages.messagemap["dseg"] = msg_ignore
+bitcoin.messages.messagemap["getsporks"] = msg_ignore
+bitcoin.messages.messagemap["mnget"] = msg_ignore
+bitcoin.messages.messagemap["mnvs"] = msg_ignore
 
 
 def JSONtoAmount(value):
