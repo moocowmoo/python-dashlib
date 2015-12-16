@@ -35,6 +35,7 @@ mempool = {}
 
 def trigger_sale(addr):
     print "sale! product %s" % products[addr]['label']
+    sys.stdout.flush()
     # products[addr]['callback']()
 
 

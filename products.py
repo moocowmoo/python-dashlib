@@ -21,7 +21,7 @@
 # Dash address              : yBh6FPVzUiEHgrCq7ob8uRKDzno9zbhKrs
 # Dash address              : y2ju9GACnDbx7vAvbeixkbLtAxZm9TdexK
 
-LOCK_THRESHOLD = 3
+LOCK_THRESHOLD = 2
 
 
 def trigger(x, y):
