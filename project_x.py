@@ -115,26 +115,22 @@ def process_p2p(data):
                 gd = msg_getdata()
                 gd.inv.append(i)
                 sock.send(gd.to_bytes())
-    elif msg.command == 'tx':
+    elif msg.command == 'tx' or msg.command == 'ix':
         txid = b2lx(msg.tx.GetHash())
         for vout in msg.tx.vout:
             addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
                 vout.scriptPubKey))
             if addr in products:
-                # refund tx
-                send_to(select_return_address(txid),
-                        dash.AmountToJSON(vout.nValue))
-    elif msg.command == 'ix':
-        txid = b2lx(msg.tx.GetHash())
-        for vout in msg.tx.vout:
-            addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
-                vout.scriptPubKey))
-            if addr in products:
-                sys.stderr.write(str(msg) + "\n")
-                if txid not in mempool:
-                    mempool[txid] = {"msg": msg}
-                elif 'msg' in mempool[txid]:
-                    check_ix_signature_depth(txid, mempool[txid]['msg'])
+                if msg.command == 'tx':
+                    # refund tx
+                    send_to(select_return_address(txid),
+                            dash.AmountToJSON(vout.nValue))
+                else:
+                    sys.stderr.write(str(msg) + "\n")
+                    if txid not in mempool:
+                        mempool[txid] = {"msg": msg}
+                    elif 'msg' in mempool[txid]:
+                        check_ix_signature_depth(txid, mempool[txid]['msg'])
 
 
 # comm loop
