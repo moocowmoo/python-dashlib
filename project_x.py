@@ -54,6 +54,7 @@ def get_txn(txid):
 
 
 def send_to(addr, value):
+    # TODO sanity check here
     cmd = '%s sendtoaddress %s %s' % (cli, addr, value)
     run_command(cmd)
 
@@ -73,12 +74,16 @@ def check_ix_signature_depth(txid, msg):
         if addr in products and len(mempool[txid]['vins']) >= LOCK_THRESHOLD:
             # right address, right ix lock count
             cost = products[addr]['cost'] * 1e8
-            if vout.nValue != cost:
+            if int(vout.nValue) < int(cost):
+                del mempool[txid]
                 # refund tx
                 send_to(select_return_address(txid),
                         dash.AmountToJSON(vout.nValue))
             else:
-                # right amount, do it to it
+                if int(vout.nValue) > int(cost):
+                    send_to(select_return_address(txid),
+                        dash.AmountToJSON(vout.nValue - cost))
+                # do it to it
                 if not mempool[txid]['sold']:
                     # mempool[txid]['sold'] = True
                     del mempool[txid]
