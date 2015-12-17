@@ -73,9 +73,11 @@ def check_ix_signature_depth(txid, msg):
         if addr in products and len(mempool[txid]['vins']) >= LOCK_THRESHOLD:
             # right address, right ix lock count
             cost = products[addr]['cost'] * 1e8
-            if vout.nValue >= cost:
-                # if vout.nValue > cost:
-                #     return_address = select_return_address(txid, vout)
+            if vout.nValue != cost:
+                # refund tx
+                send_to(select_return_address(txid),
+                        dash.AmountToJSON(vout.nValue))
+            else:
                 # right amount, do it to it
                 if not mempool[txid]['sold']:
                     # mempool[txid]['sold'] = True
