@@ -7,6 +7,10 @@ import time
 import yaml
 from cStringIO import StringIO as BytesIO
 
+
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
+
 import dash # noqa - monkeypatches bitcoin lib
 from bitcoin import SelectParams
 from bitcoin.core import b2lx
@@ -32,7 +36,7 @@ mempool = {}
 
 
 def trigger_sale(addr):
-    print " --> SALE! product %s" % products[addr]['label']
+    sys.stdout.write(" --> SALE! product %s\n" % products[addr]['label'])
     sys.stdout.flush()
     # products[addr]['callback']()
 
