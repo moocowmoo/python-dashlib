@@ -7,6 +7,7 @@ import time
 import yaml
 from cStringIO import StringIO as BytesIO
 
+from config import cli
 
 from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE, SIG_DFL)
@@ -47,14 +48,12 @@ def run_command(cmd):
 
 # qnd
 def get_txn(txid):
-    cli = 'dash-cli -datadir=/home/ubuntu/testnet/testnet'
     cmd = '%s decoderawtransaction `%s getrawtransaction %s`' % (cli, cli, txid)
     y = yaml.load(run_command(cmd))
     return y
 
 
 def send_to(addr, value):
-    cli = 'dash-cli -datadir=/home/ubuntu/testnet/testnet'
     cmd = '%s sendtoaddress %s %s' % (cli, addr, value)
     run_command(cmd)
 
