@@ -23,14 +23,18 @@ from products import products, LOCK_THRESHOLD
 
 SelectParams('testnet')
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+global sock
 
 # connect and announce peer version
-sock.connect(("127.0.0.1", 19999))
-sock.send(msg_version().to_bytes())
+def connect():
+    global sock
+    sys.stderr.write('connecting to dashd')
+    sys.stderr.flush()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("127.0.0.1", 19999))
+    sock.send(msg_version().to_bytes())
 
-# if sock:
-#     print "connected to dashd"
+connect()
 
 # mempool/ixstats
 mempool = {}
@@ -39,6 +43,8 @@ mempool = {}
 def trigger_sale(addr):
     sys.stdout.write(" --> SALE! product %s\n" % products[addr]['label'])
     sys.stdout.flush()
+    sys.stderr.write(" --> SALE! product %s\n" % products[addr]['label'])
+    sys.stderr.flush()
     # products[addr]['callback']()
 
 
@@ -107,6 +113,7 @@ def process_txlvote(msg):
 
 
 def process_p2p(data):
+    sys.stderr.write('.')
     f = BytesIO(data)
     msg = MsgSerializable.stream_deserialize(f)
     if msg is None:
@@ -145,9 +152,12 @@ def process_p2p(data):
 
 # comm loop
 while True:
-    data = sock.recv(4096)
-    time.sleep(0.01)
+    data = sock.recv(65535)
     if len(data):
         process_p2p(data)
+    else:
+        sock.close()
+        connect()
+    time.sleep(0.01)
 
 quit()
