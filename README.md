@@ -1,2 +1,7 @@
 # python-dashlib
-Work In Progress -- Do Not Use
+
+Extends python-bitcoinlib to support Dash messaging
+
+# dependencies
+
+Requires python-bitcoinlib
