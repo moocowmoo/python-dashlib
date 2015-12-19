@@ -67,16 +67,21 @@ class CTransactionLock(bitcoin.core.ImmutableSerializable):
 
     def __init__(self, hash=b'\x00'*32, vin=CTxIn(), sig=b'\x00'*65, height=0):
         """Create a new transaction lock
-
-        vin and sig are iterables of transaction hashes and masternode
-        signatures respectively. If their contents are not already immutable,
-        immutable copies will be made.
+        hash is the transaction id being locked
+        vin is the masternode funding address
+        sig is the masternodes signature for the lock
+        height is the block the lock is effective
+        If their contents are not already immutable, immutable copies will be
+        made.
         """
         if not len(hash) == 32:
             raise ValueError(
                 'CTransactionLock: hash must be exactly 32 bytes; got %d bytes' % len(hash)) # noqa
         object.__setattr__(self, 'hash', hash)
         object.__setattr__(self, 'vin', vin)
+        if not len(sig) == 65:
+            raise ValueError(
+                'CTransactionLock: sig must be exactly 65 bytes; got %d bytes' % len(sig)) # noqa
         object.__setattr__(self, 'sig', sig)
         object.__setattr__(self, 'height', height)
 
@@ -149,6 +154,7 @@ bitcoin.messages.msg_txlvote = msg_txlvote
 bitcoin.messages.msg_ix = msg_ix
 bitcoin.messages.messagemap["txlvote"] = msg_txlvote
 bitcoin.messages.messagemap["ix"] = msg_ix
+
 bitcoin.messages.messagemap["ssc"] = msg_ignore
 bitcoin.messages.messagemap["dsq"] = msg_ignore
 bitcoin.messages.messagemap["dseg"] = msg_ignore
