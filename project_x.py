@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import socket
 import subprocess
 import sys
@@ -28,7 +29,7 @@ global sock
 # connect and announce peer version
 def connect():
     global sock
-    sys.stderr.write('connecting to dashd')
+    sys.stderr.write("\n" + str(datetime.datetime.now()) + " - connecting to dashd\n")
     sys.stderr.flush()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", 19999))
@@ -77,7 +78,7 @@ def check_ix_signature_depth(txid, msg):
     for vout in msg.tx.vout:
         addr = str(P2PKHBitcoinAddress.from_scriptPubKey(
             vout.scriptPubKey))
-        if addr in products and len(mempool[txid]['vins']) >= LOCK_THRESHOLD:
+        if addr in products and 'vins' in mempool[txid] and len(mempool[txid]['vins']) >= LOCK_THRESHOLD:
             # right address, right ix lock count
             cost = products[addr]['cost'] * 1e8
             if int(vout.nValue) < int(cost):
@@ -146,6 +147,7 @@ def process_p2p(data):
                     sys.stderr.write(str(msg) + "\n")
                     if txid not in mempool:
                         mempool[txid] = {"msg": msg}
+                        check_ix_signature_depth(txid, mempool[txid]['msg'])
                     elif 'msg' in mempool[txid]:
                         check_ix_signature_depth(txid, mempool[txid]['msg'])
 
